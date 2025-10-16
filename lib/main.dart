@@ -30,7 +30,7 @@ class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
   void getNext() {
     current = WordPair.random();
-    all.add(current); // --------------------1
+    all.insert(0, current); // --------------------1
     notifyListeners();
   }
 
@@ -38,7 +38,7 @@ class MyAppState extends ChangeNotifier {
   var favorites = <WordPair>[];
   var all = <WordPair>[]; // ------------------1
   MyAppState() {
-    all.add(current);
+    all.insert(0, current);
   }
   void toggleFavorite() {
     if (favorites.contains(current)) {
@@ -120,51 +120,57 @@ class GeneratorPage extends StatelessWidget {
     var appState = context.watch<MyAppState>();
     var pair = appState.current;
 
-    IconData icon;
-    if (appState.favorites.contains(pair)) {
-      icon = Icons.favorite;
-    } else {
-      icon = Icons.favorite_border;
-    }
+    IconData icon = appState.favorites.contains(pair)
+        ? Icons.favorite
+        : Icons.favorite_border;
 
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          BigCard(pair: pair),
-          SizedBox(height: 10),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ElevatedButton.icon(
-                onPressed: () {
-                  appState.toggleFavorite();
-                },
-                icon: Icon(icon),
-                label: Text('Like'),
-              ),
-              SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () {
-                  appState.getNext();
-                },
-                child: Text('Next'),
-              ),
-            ],
+    return Row(
+      children: [
+        Container(
+          width: 150, // ample fix per a la llista històrica
+          child: ListView.builder(
+            itemCount: appState.all.length,
+            itemBuilder: (context, index) {
+              var word = appState.all[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                child: Text(word.asLowerCase, style: TextStyle(fontSize: 14)),
+              );
+            },
           ),
-          Container(
+        ),
+
+        Expanded(
+          child: Center(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                for (var al in appState.all)
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(al.asLowerCase, style: TextStyle(fontSize: 15)),
-                  ),
+                BigCard(pair: pair),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        appState.toggleFavorite();
+                      },
+                      icon: Icon(icon),
+                      label: Text('Like'),
+                    ),
+                    SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        appState.getNext();
+                      },
+                      child: Text('Next'),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
