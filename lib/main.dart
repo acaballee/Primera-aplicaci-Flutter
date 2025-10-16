@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -29,8 +31,8 @@ class MyApp extends StatelessWidget {
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
   void getNext() {
+    all.insert(0, current); // ------------------1
     current = WordPair.random();
-    all.insert(0, current); // --------------------1
     notifyListeners();
   }
 
@@ -119,7 +121,6 @@ class GeneratorPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     var pair = appState.current;
-
     IconData icon = appState.favorites.contains(pair)
         ? Icons.favorite
         : Icons.favorite_border;
@@ -127,14 +128,23 @@ class GeneratorPage extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 150, // ample fix per a la llista històrica
+          width: 150, // ------------------2
           child: ListView.builder(
             itemCount: appState.all.length,
             itemBuilder: (context, index) {
               var word = appState.all[index];
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                child: Text(word.asLowerCase, style: TextStyle(fontSize: 14)),
+                child: Row(
+                  children: [
+                    if (appState.favorites.contains(word))
+                      Icon(Icons.favorite)
+                    else
+                      Icon(Icons.favorite_border),
+                    SizedBox(width: 8),
+                    Text(word.asLowerCase, style: TextStyle(fontSize: 14)),
+                  ],
+                ),
               );
             },
           ),
@@ -190,23 +200,20 @@ class Favorites extends StatelessWidget {
     return Center(
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Text(
-              'You have ${appState.favorites.length} favorites:',
-              style: TextStyle(fontSize: 20),
-            ),
-          ),
           Container(
             child: Column(
               children: [
-                for (var fav in appState.favorites)
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      fav.asLowerCase,
-                      style: TextStyle(fontSize: 15),
-                    ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text(
+                    'You have '
+                    '${appState.favorites.length} favorites:',
+                  ),
+                ),
+                for (var pair in appState.favorites)
+                  ListTile(
+                    leading: Icon(Icons.favorite),
+                    title: Text(pair.asLowerCase),
                   ),
               ],
             ),
