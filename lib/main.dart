@@ -30,12 +30,16 @@ class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
   void getNext() {
     current = WordPair.random();
+    all.add(current); // --------------------1
     notifyListeners();
   }
 
   // ↓ Add the code below.
   var favorites = <WordPair>[];
-
+  var all = <WordPair>[]; // ------------------1
+  MyAppState() {
+    all.add(current);
+  }
   void toggleFavorite() {
     if (favorites.contains(current)) {
       favorites.remove(current);
@@ -147,6 +151,17 @@ class GeneratorPage extends StatelessWidget {
                 child: Text('Next'),
               ),
             ],
+          ),
+          Container(
+            child: Column(
+              children: [
+                for (var al in appState.all)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(al.asLowerCase, style: TextStyle(fontSize: 15)),
+                  ),
+              ],
+            ),
           ),
         ],
       ),
